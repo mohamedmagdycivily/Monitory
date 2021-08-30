@@ -12,4 +12,5 @@ router
   .patch(checkController.updateCheck)
   .delete(checkController.deleteCheck);
 
+router.route("/pause/:id").patch(checkController.pause);
 module.exports = router;

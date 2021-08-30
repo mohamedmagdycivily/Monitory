@@ -14,13 +14,10 @@ const checkQueue = new Queue("check", {
 
 checkQueue.process(async (job) => {
   try {
-    // let repeatableJobs = await checkQueue.getRepeatableJobs();
-    // console.log({ repeatableJobs });
-
-    // console.log(await checkQueue.removeRepeatableByKey(repeatableJobs[0].key));
     console.log(job.data.doc.url);
-    //make get request
+    //test the url
     const res = await request[job.data.doc.protocol](job.data.doc);
+
     res.interval_minutes = job.data.doc.interval_minutes;
     res.date = Date.now();
     res.url = job.data.doc.url;
@@ -28,7 +25,7 @@ checkQueue.process(async (job) => {
     //create log
     //   const logDoc = await Log.create(res);
     //   console.log(logDoc);
-    // console.log(res);
+    console.log(res);
 
     if (res.status === "DOWN") {
       //Notify the user if DOWN
