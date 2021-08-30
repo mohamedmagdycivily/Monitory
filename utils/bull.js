@@ -23,9 +23,13 @@ checkQueue.process(async (job) => {
     res.url = job.data.doc.url;
     res.check = job.data.doc._id;
     //create log
-    //   const logDoc = await Log.create(res);
+    const logDoc = await Log.create(res);
     //   console.log(logDoc);
     console.log(res);
+    // job.data.doc.threshold += 1;
+    // job.data.failed += 1;
+    // console.log("job.data.doc.threshold = ", job.data.doc.threshold);
+    // console.log("job.data.failed = ", job.data.failed);
 
     if (res.status === "DOWN") {
       //Notify the user if DOWN

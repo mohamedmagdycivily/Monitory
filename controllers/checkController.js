@@ -2,6 +2,7 @@ const Check = require("../models/checkModel");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const checkQueue = require("../utils/bull");
+const Logs = require("../models/logModel");
 
 // checkQueue.on("completed", (job, result) => {
 //   console.log("job.data = ", job.data);
@@ -22,7 +23,7 @@ const deleteJob = async (doc) => {
 };
 
 const createJob = (doc) => {
-  const data = { doc, jobId: doc.id };
+  const data = { doc, failed: 0, jobId: doc.id };
   const options = {
     repeat: { cron: `*/${doc.interval_minutes * 1} * * * *` },
     jobId: doc.id,
@@ -53,6 +54,9 @@ exports.updateCheck = catchAsync(async (req, res, next) => {
   if (!doc) {
     next(new AppError("No document found with that id", 404));
   } else {
+    deleteJob(doc);
+    createJob(doc);
+
     res.status(200).json({
       status: "success",
       data: {
@@ -102,6 +106,8 @@ exports.deleteCheck = catchAsync(async (req, res, next) => {
   } else {
     //delete the Job created by the check
     deleteJob(doc);
+    //delete logs associated with that check
+    await Logs.deleteMany({ check: doc });
 
     res.status(200).json({
       status: "success",

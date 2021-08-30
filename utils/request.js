@@ -20,7 +20,9 @@ const request = {
       response.statusCode = res.status;
       response.responseTime = res.duration;
 
-      if (doc.assert && doc.assert.statusCode) {
+      if (res.duration > doc.timeout_seconds) {
+        response.status = "DOWN";
+      } else if (doc.assert && doc.assert.statusCode) {
         response.status = res.status === doc.assert.statusCode ? "UP" : "DOWN";
       } else {
         response.status = res.status < 500 ? "UP" : "DOWN";
@@ -44,7 +46,10 @@ const request = {
       });
       response.statusCode = res.status;
       response.responseTime = res.duration;
-      if (doc.assert && doc.assert.statusCode) {
+
+      if (res.duration > doc.timeout_seconds) {
+        response.status = "DOWN";
+      } else if (doc.assert && doc.assert.statusCode) {
         response.status = res.status === doc.assert.statusCode ? "UP" : "DOWN";
       } else {
         response.status = res.status < 500 ? "UP" : "DOWN";
