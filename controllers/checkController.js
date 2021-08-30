@@ -63,7 +63,20 @@ exports.updateCheck = catchAsync(async (req, res, next) => {
 });
 
 exports.pause = catchAsync(async (req, res, next) => {
-  const doc = await Check.findById(req.params.id);
+  const doc = await Check.findById(req.params.id).populate("user");
+
+  if (req.user.id !== doc.user.id) {
+    console.log("req.user.id = ", req.user.id);
+    console.log("doc.user.id = ", doc.user.id);
+
+    return res.status(400).json({
+      status: "fail",
+      data: {
+        data: "you are not allowed to pause other users checks",
+      },
+    });
+  }
+
   if (req.body.pause === true && doc.pause === false) {
     doc.pause = req.body.pause;
     deleteJob(doc);
@@ -71,6 +84,7 @@ exports.pause = catchAsync(async (req, res, next) => {
     doc.pause = req.body.pause;
     createJob(doc);
   }
+
   await doc.save();
   res.status(200).json({
     status: "success",
