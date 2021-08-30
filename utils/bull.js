@@ -23,7 +23,7 @@ checkQueue.process(async (job) => {
     res.url = job.data.doc.url;
     res.check = job.data.doc._id;
     //create log
-    const logDoc = await Log.create(res);
+    // const logDoc = await Log.create(res);
     //   console.log(logDoc);
     console.log(res);
     // job.data.doc.threshold += 1;

@@ -47,6 +47,9 @@ exports.createCheck = catchAsync(async (req, res, next) => {
 });
 
 exports.updateCheck = catchAsync(async (req, res, next) => {
+  if (req.body.pause) {
+    delete req.body.pause;
+  }
   const doc = await Check.findByIdAndUpdate({ _id: req.params.id }, req.body, {
     new: true,
     runValidators: true,
@@ -54,7 +57,7 @@ exports.updateCheck = catchAsync(async (req, res, next) => {
   if (!doc) {
     next(new AppError("No document found with that id", 404));
   } else {
-    deleteJob(doc);
+    await deleteJob(doc);
     createJob(doc);
 
     res.status(200).json({

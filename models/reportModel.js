@@ -26,6 +26,10 @@ const reportSchema = new mongoose.Schema(
     responseTime: {
       type: Number,
     },
+    date: {
+      type: Date,
+      default: Date.now(),
+    },
     check: {
       type: mongoose.Schema.ObjectId,
       ref: "Check",

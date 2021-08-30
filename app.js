@@ -9,7 +9,7 @@ const AppError = require("./utils/appError");
 
 const userRouter = require("./routes/userRoutes");
 const checkRouter = require("./routes/checkRoutes");
-// const ReportRouter = require("./routes/reportModel");
+const reportRouter = require("./routes/reportRoute");
 // const historyRouter = require("./routes/historyModel");
 
 //middleware
@@ -29,6 +29,8 @@ app.use((req, res, next) => {
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/checks", checkRouter);
+app.use("./api/v1/reports", reportRouter);
+
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
