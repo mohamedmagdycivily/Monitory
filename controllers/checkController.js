@@ -11,10 +11,10 @@ exports.createCheck = catchAsync(async (req, res, next) => {
   //   console.log(req.body);
   const doc = await Check.create(req.body);
 
-  const data = { doc, jobId: doc._id };
+  const data = { doc, jobId: doc.id };
   const options = {
     repeat: { cron: `*/${doc.interval_minutes * 1} * * * *` },
-    jobId: doc._id,
+    jobId: doc.id,
   };
 
   checkQueue.add(data, options);
@@ -50,6 +50,18 @@ exports.deleteCheck = catchAsync(async (req, res, next) => {
   if (!doc) {
     return next(new AppError("No document found with that ID", 404));
   } else {
+    //delete the process created by the check
+    let repeatableJobs = await checkQueue.getRepeatableJobs();
+
+    for (const { key, id } of repeatableJobs) {
+      if (id === doc.id) {
+        console.log(`deleting job id = ${id} doc.id=${doc.id}`);
+        await checkQueue.removeRepeatableByKey(key);
+        console.log("Job deleted");
+        break;
+      }
+    }
+
     res.status(200).json({
       status: "success",
       data: null,
