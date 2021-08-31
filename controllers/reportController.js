@@ -5,165 +5,78 @@ const Check = require("../models/checkModel");
 const Log = require("../models/logModel");
 const Report = require("../models/reportModel");
 const APIFeatures = require("../utils/apiFeatures");
+const { mergeReportWithDiff, getDataFromLogs } = require("../services/reports");
 
 exports.getReport = catchAsync(async (req, res, next) => {
+  const check = await Check.findById(req.params.id);
+  if (!check) {
+    throw new AppError("Check not found", 404);
+  }
+  if (check.user.toString() === req.params.id) {
+    throw new AppError("You don't have access to this check", 402);
+  }
   let report = await Report.findOne({ check: req.params.id });
-  const check_id = mongoose.Types.ObjectId(req.params.id);
-  let logs = await Log.find({ check: req.params.id })
-    .sort({ date: -1 })
-    .limit(1);
-  //   console.log(logs);
-
+  let lastLog = await Log.findOne({ check: req.params.id }).sort({ date: -1 });
   const features = new APIFeatures(
-    Log.find({ check: req.params.id }),
+    Log.find({ check: req.params.id }).sort({ date: -1 }),
     req.query
-  ).paginate();
-  const history = await features.query.sort({ date: -1 });
+  );
+  const history = await features.paginate().query;
 
   if (!report) {
-    let report_data = await getDataFromLogs(check_id);
-    report_data.status = logs[0].status;
-    report = await Report.create(report_data);
+    let reportDiff = await getDataFromLogs(req.params.id);
+    reportDiff.status = lastLog.status;
+    //Save snapshot
+    report = await Report.create(reportDiff);
   } else {
-    let report_data = await getDataFromLogs(check_id, report.date);
-
-    const totalResponse =
-      report_data.responseTime * (report_data.upNumber + report_data.outages) +
-      report.responseTime * (report.upNumber + report.outages);
-
-    report.responseTime = Math.round(totalResponse / logs.length);
-    report.status = logs[0].status;
-    report.outages += report_data.outages;
-    report.upNumber += report_data.upNumber;
-    report.downtime += report_data.downtime;
-    report.uptime += report_data.uptime;
-    report.availability = Math.round(
-      (report.upNumber / (report.upNumber + report.outages)) * 100
-    );
-    report.date = Date.now();
+    let reportDiff = await getDataFromLogs(req.params.id, report.date);
+    mergeReportWithDiff(report, reportDiff, lastLog.status);
     await report.save();
   }
-
-  //preparing report to send
-  //   delete report.upNumber;
-  //   report.history = history;
+  // preparing report to send
+  report = report.toObject();
+  delete report.upNumber;
+  report.logs = history;
 
   return res.status(200).json({
     status: "success",
-    data: {
-      report,
-      history,
-    },
+    data: report,
   });
 });
 
-const getDataFromLogs = async (check_id, reportLastDate) => {
-  let stats;
-  if (reportLastDate) {
-    stats = await Log.aggregate([
-      {
-        $match: { check: { $eq: check_id } },
-      },
-      {
-        $match: {
-          date: { $gt: reportLastDate },
-        },
-      },
-      {
-        $group: {
-          _id: "$status",
-          status_num: { $sum: 1 },
-          interval_minutes: { $sum: "$interval_minutes" },
-          responseTime: { $sum: "$responseTime" },
-        },
-      },
-      {
-        $addFields: { status: "$_id" },
-      },
-      {
-        $project: {
-          _id: 0,
-        },
-      },
-      {
-        $sort: { status: -1 },
-      },
-    ]);
-  } else {
-    stats = await Log.aggregate([
-      {
-        $match: { check: { $eq: check_id } },
-      },
+exports.getReportsByTag = catchAsync(async (req, res) => {
+  const checks = await Check.find({ tags: req.query.tag, user: req.user.id });
+  const reports = await Promise.all(
+    checks.map(async (check) => {
+      let report = await Report.findOne({ check: check.id });
+      let lastLog = await Log.findOne({ check: check.id }).sort({
+        date: -1,
+      });
+      const features = new APIFeatures(
+        Log.find({ check: check.id }).sort({ date: -1 }),
+        req.query
+      );
+      const history = await features.paginate().query;
 
-      {
-        $group: {
-          _id: "$status",
-          status_num: { $sum: 1 },
-          interval_minutes: { $sum: "$interval_minutes" },
-          responseTime: { $sum: "$responseTime" },
-        },
-      },
-      {
-        $addFields: { status: "$_id" },
-      },
-      {
-        $project: {
-          _id: 0,
-        },
-      },
-      {
-        $sort: { status: -1 },
-      },
-    ]);
-  }
-
-  let up = stats[0];
-  let down = stats[1];
-  let availability, outages, downtime, uptime, responseTime;
-
-  if (up && down) {
-    availability = Math.round(
-      (up.status_num / (up.status_num + down.status_num)) * 100
-    );
-    outages = down.status_num;
-    upNumber = up.status_num;
-    downtime = down.interval_minutes;
-    uptime = up.interval_minutes;
-    responseTime = Math.round(
-      (down.responseTime + up.responseTime) / (down.status_num + up.status_num)
-    );
-  } else if (up) {
-    availability = 100;
-    outages = 0;
-    upNumber = up.status_num;
-    downtime = 0;
-    uptime = up.interval_minutes;
-    responseTime = up.responseTime / up.status_num;
-  } else if (down) {
-    availability = 0;
-    outages = down.status_num;
-    upNumber = 0;
-    downtime = down.interval_minutes;
-    uptime = 0;
-    responseTime = down.responseTime / down.status_num;
-  } else {
-    availability = 0;
-    outages = 0;
-    upNumber = 0;
-    downtime = 0;
-    uptime = 0;
-    responseTime = 0;
-  }
-  const report_data = {
-    // status: logs[0].status,
-    availability,
-    outages,
-    upNumber,
-    downtime,
-    uptime,
-    responseTime,
-    date: Date.now(),
-    check: check_id,
-  };
-  return report_data;
-};
+      if (!report) {
+        let reportDiff = await getDataFromLogs(check.id);
+        reportDiff.status = lastLog.status;
+        //Save snapshot
+        report = await Report.create(reportDiff);
+      } else {
+        let reportDiff = await getDataFromLogs(check.id, report.date);
+        mergeReportWithDiff(report, reportDiff, lastLog.status);
+        await report.save();
+      }
+      // preparing report to send
+      report = report.toObject();
+      delete report.upNumber;
+      report.logs = history;
+      return report;
+    })
+  );
+  return res.json({
+    status: "success",
+    data: reports,
+  });
+});

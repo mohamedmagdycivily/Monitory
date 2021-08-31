@@ -5,6 +5,7 @@ module.exports = (err, req, res, next) => {
     status: err.status,
     error: err,
     message: err.message,
+    //Should be removed in production.
     stack: err.stack,
   });
 };

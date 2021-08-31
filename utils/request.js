@@ -1,33 +1,44 @@
 const https = require("https");
+const net = require("net");
 const axios = require("./axios");
 
-const request = {
-  https: async (doc) => {
+function getHttpRequester(secure = false) {
+  return async (doc) => {
     let agent;
-    if (doc.ignoreSSL) {
-      agent = new https.Agent({
-        rejectUnauthorized: false,
-      });
+    if (secure) {
+      if (doc.ignoreSSL) {
+        agent = new https.Agent({
+          rejectUnauthorized: false,
+        });
+      }
     }
     let response = {};
     // const timeBeforeReq = new Date().getTime();
     try {
-      const res = await axios.get(doc.url, {
+      let url = new URL(doc.url);
+      if (doc.path) {
+        url.pathname = doc.path;
+      }
+      if (doc.port) {
+        url.port = doc.port;
+      }
+      url.protocol = doc.protocol;
+      const res = await axios.get(url.toString(), {
         httpsAgent: agent,
         headers: doc.httpHeaders,
         auth: doc.authentication,
+        timeout: doc.timeout_seconds * 1000,
       });
       response.statusCode = res.status;
       response.responseTime = res.duration;
 
-      if (res.duration > doc.timeout_seconds) {
-        response.status = "DOWN";
-      } else if (doc.assert && doc.assert.statusCode) {
+      if (doc.assert && doc.assert.statusCode) {
         response.status = res.status === doc.assert.statusCode ? "UP" : "DOWN";
       } else {
         response.status = res.status < 500 ? "UP" : "DOWN";
       }
     } catch (err) {
+      //Handle timeout here
       response.statusCode = 500;
       response.status = "DOWN";
       response.responseTime = err.duration;
@@ -35,33 +46,26 @@ const request = {
     // let reqTime = new Date().getTime() - timeBeforeReq;
     // response.responseTime = Math.round( / 1000);
     return response;
-  },
-  http: async (doc) => {
-    let response = {};
-    // const timeBeforeReq = new Date().getTime();
-    try {
-      const res = await axios.get(doc.url, {
-        headers: doc.httpHeaders,
-        auth: doc.authentication,
-      });
-      response.statusCode = res.status;
-      response.responseTime = res.duration;
+  };
+}
 
-      if (res.duration > doc.timeout_seconds) {
-        response.status = "DOWN";
-      } else if (doc.assert && doc.assert.statusCode) {
-        response.status = res.status === doc.assert.statusCode ? "UP" : "DOWN";
-      } else {
-        response.status = res.status < 500 ? "UP" : "DOWN";
+function requestTcp(doc) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(doc.url);
+    net.connect(url.port, url.hostname, function (err) {
+      if (err) {
+        //down logic
+        return reject();
       }
-    } catch (err) {
-      response.status = 500;
-      response.status = "DOWN";
-      response.responseTime = err.duration;
-    }
-
-    return response;
-  },
+      //Up logic
+      return resolve();
+    });
+  });
+}
+const request = {
+  https: getHttpRequester(true),
+  http: getHttpRequester(),
+  tcp: requestTcp,
 };
 
 module.exports = request;

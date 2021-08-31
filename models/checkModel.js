@@ -66,9 +66,9 @@ const checkSchema = new mongoose.Schema(
       ref: "User",
       required: [true, "Check must belong to a user"],
     },
-    pause: {
+    isActive: {
       type: Boolean,
-      default: false,
+      default: true,
     },
   },
   {

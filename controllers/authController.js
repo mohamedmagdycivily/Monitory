@@ -38,43 +38,36 @@ const createSendToken = (user, statusCode, res) => {
 
 exports.signup = catchAsync(async (req, res, next) => {
   //1-create user
-  const newUser = await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm,
-  });
-
-  // 2) Generate the random Activate token
-  const activateToken = newUser.createPasswordActivateToken();
-  await newUser.save({ validateBeforeSave: false });
-
-  // 3) Send it to user's email
+  console.log(req.body);
+  let newUser;
   try {
-    const url = `
-    please hit the LINK to activate your account on monitory website
-     ${req.protocol}://${req.get(
-      "host"
-    )}/api/v1/users/activateAccount/${activateToken}
-     if you did not registered on the website then please ignore this mail
-     `;
-
-    // console.log(url);
-    await new Email(newUser, url).sendMail("Welcome to the Monitory !");
-
-    res.status(200).json({
-      status: "success",
-      message: "Token sent to email!",
+    newUser = await User.create({
+      name: req.body.name,
+      email: req.body.email,
+      password: req.body.password,
+      passwordConfirm: req.body.passwordConfirm,
     });
   } catch (err) {
-    newUser.passwordActivateToken = undefined;
-    await newUser.save({ validateBeforeSave: false });
-
-    return next(
-      new AppError("There was an error sending the email. Try again later!"),
-      500
-    );
+    console.error(err);
+    return res.status(500).json({
+      message: "Something went wrong",
+    });
   }
+  newUser.activateToken = newUser.createPasswordActivateToken();
+  await newUser.save({ validateBeforeSave: false });
+
+  const url = `
+    please hit the LINK to activate your account on monitory website
+     ${req.protocol}://${req.get("host")}/api/v1/users/activateAccount/${
+    newUser.activateToken
+  }
+     if you did not registered on the website then please ignore this mail
+     `;
+  new Email(newUser, url).sendMail("Welcome to the Monitory !");
+  return res.status(200).json({
+    status: "success",
+    message: "Token sent to email!",
+  });
 
   //   createSendToken(newUser, 201, res);
 });

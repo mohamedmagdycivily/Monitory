@@ -2,7 +2,7 @@ const Queue = require("bull");
 
 const Log = require("../models/logModel");
 const User = require("../models/userModel");
-const sendNotification = require("./notification");
+const notificationChannels = require("./notification");
 const request = require("./request");
 
 const checkQueue = new Queue("check", {
@@ -34,10 +34,10 @@ checkQueue.process(async (job) => {
     if (res.status === "DOWN") {
       //Notify the user if DOWN
       const user = await User.findById(job.data.doc.user);
-      const textInMail = `ALERT  check for ${job.data.doc.url} is DOWN !!`;
       console.log(`sending notification to ${user.email}`);
-
-      await sendNotification.mail(user, textInMail);
+      notificationChannels.forEach((channel) =>
+        channel.notify(user, job.data.doc)
+      );
     }
   } catch (err) {
     console.log("err = ", err);

@@ -35,6 +35,16 @@ const createJob = (doc) => {
 
 exports.createCheck = catchAsync(async (req, res, next) => {
   //   console.log(req.body);
+  // const supportedProtocols = ["http", "https", "tcp"];
+  // const protocol = req.body.protocol || new URL(req.body.url).protocol;
+  // if (!protocol || !supportedProtocols.includes(protocol)) {
+  //   throw new AppError(
+  //     `You must provide a protocol. Supported protocols are ${supportedProtocols.join(
+  //       ", "
+  //     )}`
+  //   );
+  // }
+  // req.body.protocol = protocol;
   const doc = await Check.create(req.body);
   createJob(doc);
 
@@ -69,49 +79,41 @@ exports.updateCheck = catchAsync(async (req, res, next) => {
   }
 });
 
-exports.pause = catchAsync(async (req, res, next) => {
+exports.setCheckActiveState = catchAsync(async (req, res, next) => {
   const doc = await Check.findById(req.params.id).populate("user");
-
+  if (!doc) {
+    throw new AppError("Check not found", 404);
+  }
   if (req.user.id !== doc.user.id) {
     console.log("req.user.id = ", req.user.id);
     console.log("doc.user.id = ", doc.user.id);
-
-    return res.status(400).json({
-      status: "fail",
-      data: {
-        data: "you are not allowed to pause other users checks",
-      },
-    });
+    throw new AppError("you are not allowed to pause other users checks", 402);
   }
 
-  if (req.body.pause === true && doc.pause === false) {
-    doc.pause = req.body.pause;
-    deleteJob(doc);
-  } else if (req.body.pause === false && doc.pause === true) {
-    doc.pause = req.body.pause;
+  if (req.body.isActive === true && doc.isActive === false) {
     createJob(doc);
+  } else if (req.body.isActive === false && doc.isActive === true) {
+    deleteJob(doc);
   }
-
-  await doc.save();
-  res.status(200).json({
+  if (doc.isActive !== req.body.isActive) {
+    doc.isActive = req.body.isActive;
+    await doc.save();
+  }
+  return res.status(200).json({
     status: "success",
-    data: {
-      data: doc,
-    },
+    data: doc,
   });
 });
 
 exports.deleteCheck = catchAsync(async (req, res, next) => {
   const doc = await Check.findByIdAndDelete(req.params.id);
-
   if (!doc) {
-    return next(new AppError("No document found with that ID", 404));
+    throw new AppError("No document found with that ID", 404);
   } else {
     //delete the Job created by the check
     deleteJob(doc);
     //delete logs associated with that check
     await Logs.deleteMany({ check: doc });
-
     res.status(200).json({
       status: "success",
       data: null,
