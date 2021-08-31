@@ -17,6 +17,9 @@ const reportSchema = new mongoose.Schema(
     outages: {
       type: Number,
     },
+    upNumber: {
+      type: Number,
+    },
     downtime: {
       type: Number,
     },
