@@ -25,7 +25,7 @@ checkQueue.process(async (job) => {
     //create log
     // const logDoc = await Log.create(res);
     //   console.log(logDoc);
-    console.log(res);
+    // console.log(res);
     // job.data.doc.threshold += 1;
     // job.data.failed += 1;
     // console.log("job.data.doc.threshold = ", job.data.doc.threshold);
