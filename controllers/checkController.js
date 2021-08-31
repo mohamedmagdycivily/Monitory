@@ -4,11 +4,6 @@ const AppError = require("./../utils/appError");
 const checkQueue = require("../utils/bull");
 const Logs = require("../models/logModel");
 
-// checkQueue.on("completed", (job, result) => {
-//   console.log("job.data = ", job.data);
-//   console.log(`Job completed with result ${result}`);
-// });
-
 const deleteJob = async (doc) => {
   let repeatableJobs = await checkQueue.getRepeatableJobs();
 
@@ -34,20 +29,8 @@ const createJob = (doc) => {
 };
 
 exports.createCheck = catchAsync(async (req, res, next) => {
-  //   console.log(req.body);
-  // const supportedProtocols = ["http", "https", "tcp"];
-  // const protocol = req.body.protocol || new URL(req.body.url).protocol;
-  // if (!protocol || !supportedProtocols.includes(protocol)) {
-  //   throw new AppError(
-  //     `You must provide a protocol. Supported protocols are ${supportedProtocols.join(
-  //       ", "
-  //     )}`
-  //   );
-  // }
-  // req.body.protocol = protocol;
-  // console.log(typeof req.user._id);
   req.body.user = req.user._id;
-  // console.log(req.body.check);
+
   const doc = await Check.create(req.body);
   createJob(doc);
 
