@@ -45,6 +45,9 @@ exports.createCheck = catchAsync(async (req, res, next) => {
   //   );
   // }
   // req.body.protocol = protocol;
+  // console.log(typeof req.user._id);
+  req.body.user = req.user._id;
+  // console.log(req.body.check);
   const doc = await Check.create(req.body);
   createJob(doc);
 

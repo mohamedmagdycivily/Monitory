@@ -7,17 +7,17 @@ const router = express.Router();
 router.use(authController.protect);
 
 // for testing only
-const data = {
-  1: "one",
-};
-router.route("/").get(async (req, res, next) => {
-  res.status(200).json({
-    status: "success",
-    data: {
-      data,
-    },
-  });
-});
+// const data = {
+//   1: "one",
+// };
+// router.route("/").get(async (req, res, next) => {
+//   res.status(200).json({
+//     status: "success",
+//     data: {
+//       data,
+//     },
+//   });
+// });
 
 router.route("/").post(checkController.createCheck);
 router

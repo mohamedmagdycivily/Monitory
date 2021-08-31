@@ -19,10 +19,11 @@ function getHttpRequester(secure = false) {
       if (doc.path) {
         url.pathname = doc.path;
       }
-      if (doc.port) {
-        url.port = doc.port;
-      }
+      // if (doc.port) {
+      //   url.port = doc.port;
+      // }
       url.protocol = doc.protocol;
+
       const res = await axios.get(url.toString(), {
         httpsAgent: agent,
         headers: doc.httpHeaders,
@@ -31,20 +32,17 @@ function getHttpRequester(secure = false) {
       });
       response.statusCode = res.status;
       response.responseTime = res.duration;
-
+      console.log("response.statusCode = ", response.statusCode);
       if (doc.assert && doc.assert.statusCode) {
         response.status = res.status === doc.assert.statusCode ? "UP" : "DOWN";
       } else {
         response.status = res.status < 500 ? "UP" : "DOWN";
       }
     } catch (err) {
-      //Handle timeout here
       response.statusCode = 500;
       response.status = "DOWN";
       response.responseTime = err.duration;
     }
-    // let reqTime = new Date().getTime() - timeBeforeReq;
-    // response.responseTime = Math.round( / 1000);
     return response;
   };
 }
