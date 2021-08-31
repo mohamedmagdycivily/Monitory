@@ -1,14 +1,24 @@
+const mongoose = require("mongoose");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const Check = require("../models/checkModel");
 const Log = require("../models/logModel");
 const Report = require("../models/reportModel");
-const mongoose = require("mongoose");
+const APIFeatures = require("../utils/apiFeatures");
 
 exports.getReport = catchAsync(async (req, res, next) => {
   let report = await Report.findOne({ check: req.params.id });
   const check_id = mongoose.Types.ObjectId(req.params.id);
-  let logs = await Log.find({ check: req.params.id }).sort({ date: -1 });
+  let logs = await Log.find({ check: req.params.id })
+    .sort({ date: -1 })
+    .limit(1);
+  //   console.log(logs);
+
+  const features = new APIFeatures(
+    Log.find({ check: req.params.id }),
+    req.query
+  ).paginate();
+  const history = await features.query.sort({ date: -1 });
 
   if (!report) {
     let report_data = await getDataFromLogs(check_id);
@@ -30,14 +40,19 @@ exports.getReport = catchAsync(async (req, res, next) => {
     report.availability = Math.round(
       (report.upNumber / (report.upNumber + report.outages)) * 100
     );
-
+    report.date = Date.now();
     await report.save();
   }
+
+  //preparing report to send
+  //   delete report.upNumber;
+  //   report.history = history;
 
   return res.status(200).json({
     status: "success",
     data: {
       report,
+      history,
     },
   });
 });

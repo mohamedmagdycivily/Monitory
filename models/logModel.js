@@ -33,6 +33,8 @@ const logSchema = new mongoose.Schema(
   }
 );
 
+// logSchema.index({ date: 1 }, { unique: true });
+
 const Log = mongoose.model("Log", logSchema);
 
 module.exports = Log;
