@@ -133,9 +133,17 @@ describe("Testing", () => {
           name: "test updated",
         })
         .set("Authorization", "Bearer " + token);
-      console.log(body);
+
       expect(body.status).toEqual("success");
       expect(body.data.data.name).toEqual("test updated");
+    });
+
+    it("delete check", async () => {
+      const { body } = await request(app)
+        .patch(`/api/v1/checks/${checkId}`)
+        .set("Authorization", "Bearer " + token);
+
+      expect(body.status).toEqual("success");
     });
   });
 });
