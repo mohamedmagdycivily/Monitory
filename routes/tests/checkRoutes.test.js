@@ -140,15 +140,10 @@ describe("Testing", () => {
   });
 
   describe("reportRoutes", () => {
-    console.log("hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
-
     it("get report", async () => {
-      console.log(`api/v1/reports/${checkId}?page=1&limit=5`);
-      console.log({ checkId });
       const { body } = await request(app)
         .get(`/api/v1/reports/${checkId}?page=1&limit=5`)
         .set("Authorization", "Bearer " + token);
-      console.log(body);
 
       expect(body.message).toEqual(
         "there is no report please wait for 10 minutes and check again "

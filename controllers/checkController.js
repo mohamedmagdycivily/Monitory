@@ -9,9 +9,8 @@ const deleteJob = async (doc) => {
 
   for (const { key, id } of repeatableJobs) {
     if (id === doc.id) {
-      console.log(`deleting job id = ${id} doc.id=${doc.id}`);
       await checkQueue.removeRepeatableByKey(key);
-      console.log("Job deleted");
+
       break;
     }
   }
