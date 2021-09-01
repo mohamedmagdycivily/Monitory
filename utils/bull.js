@@ -67,12 +67,6 @@ checkQueue.process(async (job) => {
       notificationChannels.forEach((channel) =>
         channel.notify(user, job.data.doc)
       );
-      //sending post request with notification to webhook
-      if (job.data.doc.webhook) {
-        axios.post(job.data.doc.webhook, {
-          message: `ALERT  check for : ${job.data.doc.url} is DOWN !!`,
-        });
-      }
     }
   } catch (err) {
     console.log("err = ", err);
