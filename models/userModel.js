@@ -109,12 +109,14 @@ userSchema.methods.createPasswordResetToken = function () {
 
 userSchema.methods.createPasswordActivateToken = function () {
   const resetToken = crypto.randomBytes(32).toString("hex");
-  this.passwordActivateToken = crypto
-    .createHash("sha256")
-    .update(resetToken)
-    .digest("hex");
-  // console.log({ resetToken }, this.passwordActivateToken);
-  // this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  //modified for testing purposes
+  this.passwordActivateToken = resetToken;
+  // this.passwordActivateToken = crypto
+  //   .createHash("sha256")
+  //   .update(resetToken)
+  //   .digest("hex");
+
   return resetToken;
 };
 

@@ -73,6 +73,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 });
 
 exports.activateAccount = catchAsync(async (req, res, next) => {
+  // modified for testing purposes
   // 1) Get user based on the token
   // const hashedToken = crypto
   //   .createHash("sha256")
