@@ -55,7 +55,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   }
   newUser.activateToken = newUser.createPasswordActivateToken();
   await newUser.save({ validateBeforeSave: false });
-
+  console.log(newUser);
   const url = `
     please hit the LINK to activate your account on monitory website
      ${req.protocol}://${req.get("host")}/api/v1/users/activateAccount/${

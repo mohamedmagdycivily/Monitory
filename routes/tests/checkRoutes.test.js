@@ -15,8 +15,8 @@ const dotenv = require("dotenv");
 
 dotenv.config({ path: "./config.env" });
 
-jest.setTimeout(30000);
-describe("sign up", () => {
+// jest.setTimeout(30000);
+describe("Testing", () => {
   // beforeEach(async () => {
   //   await User.deleteMany();
   // });
@@ -30,70 +30,44 @@ describe("sign up", () => {
       })
       .then(() => console.log("DB connection is successful"));
   });
-  it("GET / - success", async () => {
-    const userData = {
-      name: "test!!3",
-      email: "maged123321as@mailsac.com",
-      password: "test1234",
-      passwordConfirm: "test1234",
-    };
 
-    const { body } = await request(app)
-      .post("/api/v1/users/signup")
-      .send(userData);
+  describe("userRoutes", () => {
+    it("sign up", async () => {
+      const userData = {
+        name: "test1",
+        email: "test1@mailsac.com",
+        password: "test1234",
+        passwordConfirm: "test1234",
+      };
 
-    console.log(body);
-    expect(body).toEqual({
-      status: "success",
-      message: "Token sent to email!",
+      const { body } = await request(app)
+        .post("/api/v1/users/signup")
+        .send(userData);
+
+      // console.log(body);
+      expect(body).toEqual({
+        status: "success",
+        message: "Token sent to email!",
+      });
+    });
+
+    it("", async () => {
+      const userData = {
+        name: "test1",
+        email: "test1@mailsac.com",
+        password: "test1234",
+        passwordConfirm: "test1234",
+      };
+
+      const { body } = await request(app)
+        .post("/api/v1/users/signup")
+        .send(userData);
+
+      // console.log(body);
+      expect(body).toEqual({
+        status: "success",
+        message: "Token sent to email!",
+      });
     });
   });
 });
-// it("POST /states - success", async () => {
-//     let stateObj = {
-//       state: "AL",
-//       capital: "Montgomery",
-//       governor: "Kay Ivey",
-//     };
-//     const { body } = await request(app).post("/states").send(stateObj);
-//     expect(body).toEqual({
-//       status: "success",
-//       stateInfo: {
-//         state: "AL",
-//         capital: "Montgomery",
-//         governor: "Kay Ivey",
-//       },
-//     });
-//     expect(save).toHaveBeenCalledWith([
-//       {
-//         state: "MI",
-//         capital: "Lansing",
-//         governor: "Gretchen Whitmer",
-//       },
-//       {
-//         state: "GA",
-//         capital: "Atlanta",
-//         governor: "Brian Kemp",
-//       },
-//       {
-//         state: "AL",
-//         capital: "Montgomery",
-//         governor: "Kay Ivey",
-//       },
-//     ]);
-//   });
-// w
-
-// describe("Checking Names", () => {
-//   beforeEach(() => nameCheck());
-
-//   test("User is Jeff", () => {
-//     const user = "Jeff";
-//     expect(user).toBe("Jeff");
-//   });
-
-//   test("User is Karen", () => {
-//     const user = "Karen";
-//     expect(user).toBe("Karen");
-//   });
-// });

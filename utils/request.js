@@ -19,9 +19,9 @@ function getHttpRequester(secure = false) {
       if (doc.path) {
         url.pathname = doc.path;
       }
-      // if (doc.port) {
-      //   url.port = doc.port;
-      // }
+      if (doc.port) {
+        url.port = doc.port;
+      }
       url.protocol = doc.protocol;
 
       const res = await axios.get(url.toString(), {
@@ -50,13 +50,22 @@ function getHttpRequester(secure = false) {
 function requestTcp(doc) {
   return new Promise((resolve, reject) => {
     const url = new URL(doc.url);
+    const timeBefore = Date.now();
+
     net.connect(url.port, url.hostname, function (err) {
+      const responseTime = Date.now();
+      let response;
       if (err) {
         //down logic
-        return reject();
+        response.status = "DOWN";
+        response.responseTime = responseTime;
+
+        return reject(response);
       }
       //Up logic
-      return resolve();
+      response.status = res.status < 500 ? "UP" : "DOWN";
+      response.responseTime = responseTime;
+      return resolve(response);
     });
   });
 }
