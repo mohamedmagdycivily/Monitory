@@ -1,0 +1,34 @@
+version: '3'
+services:
+  api:
+    container_name: 'bost-api'
+    build: .
+    image: 'bost/api:v1'
+    restart: on-failure
+    depends_on: 
+      - mongo
+      - redis
+    volumes: 
+      - ./:/api      
+    ports: 
+      - 3000:3000
+    command: npm start
+    hostname: api-server
+  mongo:
+    image: mongo:4
+    container_name: bosta-db
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+  redis:
+    image: redis:5-alpine
+    container_name: bosta-redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: ['redis-server'] 
+volumes:
+  mongo_data:
+  redis_data:
