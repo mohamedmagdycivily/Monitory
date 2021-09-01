@@ -45,7 +45,6 @@ describe("Testing", () => {
         .post("/api/v1/users/signup")
         .send(userData);
 
-      // console.log(body);
       expect(body).toEqual({
         status: "success",
         message: "Token sent to email!",
@@ -54,17 +53,27 @@ describe("Testing", () => {
 
     it("activate user", async () => {
       let user = await User.findOne({ email: "test1@mailsac.com" });
-      // console.log("hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
 
-      // console.log(user);
       let passwordActivateToken = user.passwordActivateToken;
 
-      // const user = await User.findOne({ email }).select("+password +active");
       const { body } = await request(app).patch(
         `/api/v1/users/activateAccount/${passwordActivateToken}`
       );
 
-      // console.log(body);
+      token = body.token;
+      expect(body.status).toEqual("success");
+    });
+
+    it("log in", async () => {
+      const { body } = await request(app)
+        .post("/api/v1/users/login")
+        .send({
+          email: "test1@mailsac.com",
+          password: "test1234",
+        })
+        .set("Authorization", "Bearer " + token);
+
+      console.log(body);
       token = body.token;
       expect(body.status).toEqual("success");
     });

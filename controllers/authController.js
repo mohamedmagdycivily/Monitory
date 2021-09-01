@@ -38,7 +38,7 @@ const createSendToken = (user, statusCode, res) => {
 
 exports.signup = catchAsync(async (req, res, next) => {
   //1-create user
-  console.log(req.body);
+
   let newUser;
   try {
     newUser = await User.create({
@@ -55,7 +55,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   }
   newUser.activateToken = newUser.createPasswordActivateToken();
   await newUser.save({ validateBeforeSave: false });
-  console.log(newUser);
+
   const url = `
     please hit the LINK to activate your account on monitory website
      ${req.protocol}://${req.get("host")}/api/v1/users/activateAccount/${
@@ -85,7 +85,6 @@ exports.activateAccount = catchAsync(async (req, res, next) => {
   const user = await User.findOne({
     passwordActivateToken: hashedToken,
   }).select("+active");
-  console.log(user);
 
   // 2) if there is user, set the new password
   if (!user) {
