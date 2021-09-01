@@ -24,7 +24,7 @@ checkQueue.process(async (job) => {
     res.url = job.data.doc.url;
     res.check = job.data.doc._id;
     //create log
-    const logDoc = await Log.create(res);
+    // const logDoc = await Log.create(res);
 
     if (res.status === "DOWN") {
       //Notify the user if DOWN
@@ -64,9 +64,9 @@ checkQueue.process(async (job) => {
       const user = await User.findById(job.data.doc.user);
       console.log(`sending notification to ${user.email}`);
       //sending notification through notification channel
-      notificationChannels.forEach((channel) =>
-        channel.notify(user, job.data.doc)
-      );
+      // notificationChannels.forEach((channel) =>
+      //   channel.notify(user, job.data.doc)
+      // );
       //sending post request with notification to webhook
       if (job.data.doc.webhook) {
         axios.post(job.data.doc.webhook, {

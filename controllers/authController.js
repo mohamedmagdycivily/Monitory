@@ -74,14 +74,17 @@ exports.signup = catchAsync(async (req, res, next) => {
 
 exports.activateAccount = catchAsync(async (req, res, next) => {
   // 1) Get user based on the token
-  const hashedToken = crypto
-    .createHash("sha256")
-    .update(req.params.token)
-    .digest("hex");
+  // const hashedToken = crypto
+  //   .createHash("sha256")
+  //   .update(req.params.token)
+  //   .digest("hex");
 
+  const hashedToken = req.params.token;
+  console.log(hashedToken);
   const user = await User.findOne({
     passwordActivateToken: hashedToken,
   }).select("+active");
+  console.log(user);
 
   // 2) if there is user, set the new password
   if (!user) {

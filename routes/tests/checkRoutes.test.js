@@ -30,6 +30,7 @@ describe("Testing", () => {
       })
       .then(() => console.log("DB connection is successful"));
   });
+  let token;
 
   describe("userRoutes", () => {
     it("sign up", async () => {
@@ -51,23 +52,21 @@ describe("Testing", () => {
       });
     });
 
-    it("", async () => {
-      const userData = {
-        name: "test1",
-        email: "test1@mailsac.com",
-        password: "test1234",
-        passwordConfirm: "test1234",
-      };
+    it("activate user", async () => {
+      let user = await User.findOne({ email: "test1@mailsac.com" });
+      // console.log("hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
 
-      const { body } = await request(app)
-        .post("/api/v1/users/signup")
-        .send(userData);
+      // console.log(user);
+      let passwordActivateToken = user.passwordActivateToken;
+
+      // const user = await User.findOne({ email }).select("+password +active");
+      const { body } = await request(app).patch(
+        `/api/v1/users/activateAccount/${passwordActivateToken}`
+      );
 
       // console.log(body);
-      expect(body).toEqual({
-        status: "success",
-        message: "Token sent to email!",
-      });
+      token = body.token;
+      expect(body.status).toEqual("success");
     });
   });
 });
