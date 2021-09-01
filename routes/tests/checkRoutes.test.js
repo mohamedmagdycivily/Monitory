@@ -140,7 +140,7 @@ describe("Testing", () => {
 
     it("delete check", async () => {
       const { body } = await request(app)
-        .patch(`/api/v1/checks/${checkId}`)
+        .delete(`/api/v1/checks/${checkId}`)
         .set("Authorization", "Bearer " + token);
 
       expect(body.status).toEqual("success");
