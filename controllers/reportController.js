@@ -25,12 +25,23 @@ exports.getReport = catchAsync(async (req, res, next) => {
 
   if (!report) {
     let reportDiff = await getDataFromLogs(req.params.id);
+    //for testing purpose instead of reportDiff.status = lastLog.status
+    if (!lastLog) {
+      throw new AppError(
+        "there is no report please wait for 10 minutes and check again ",
+        404
+      );
+    }
     reportDiff.status = lastLog.status;
+    // reportDiff.status = lastLog ? lastLog.status : "DOWN";
     //Save snapshot
     report = await Report.create(reportDiff);
   } else {
     let reportDiff = await getDataFromLogs(req.params.id, report.date);
-    mergeReportWithDiff(report, reportDiff, lastLog.status);
+    //for testing purpose instead of lastLogStatus = lastLog.status
+    // lastLogStatus = lastLog ? lastLog.status : "DOWN";
+    lastLogStatus = lastLog.status;
+    mergeReportWithDiff(report, reportDiff, lastLogStatus);
     await report.save();
   }
   // preparing report to send
