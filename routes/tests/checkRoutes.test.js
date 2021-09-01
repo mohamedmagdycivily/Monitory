@@ -30,7 +30,7 @@ describe("Testing", () => {
       })
       .then(() => console.log("DB connection is successful"));
   });
-  let token;
+  let token, checkId;
 
   describe("userRoutes", () => {
     it("sign up", async () => {
@@ -73,8 +73,38 @@ describe("Testing", () => {
         })
         .set("Authorization", "Bearer " + token);
 
-      console.log(body);
       token = body.token;
+      expect(body.status).toEqual("success");
+    });
+  });
+
+  describe("checkRoutes", () => {
+    it("create check", async () => {
+      const checkData = {
+        name: "test check",
+        url: "https://www.facebook.com/",
+        protocol: "https",
+        port: 443,
+        timeout_seconds: 10,
+        interval_minutes: 1,
+        threshold: 1,
+        authentication: {
+          username: "mohamed magdy",
+          password: "test1234",
+        },
+        httpHeaders: {},
+        assert: {},
+        tags: ["red"],
+        ignoreSSL: true,
+      };
+
+      const { body } = await request(app)
+        .post("/api/v1/checks")
+        .send(checkData)
+        .set("Authorization", "Bearer " + token);
+
+      checkId = body.data.data.id;
+
       expect(body.status).toEqual("success");
     });
   });

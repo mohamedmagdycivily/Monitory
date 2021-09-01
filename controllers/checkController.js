@@ -25,7 +25,6 @@ const createJob = (doc) => {
   };
 
   checkQueue.add(data, options);
-  console.log("job created");
 };
 
 exports.createCheck = catchAsync(async (req, res, next) => {

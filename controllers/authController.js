@@ -81,7 +81,6 @@ exports.activateAccount = catchAsync(async (req, res, next) => {
   //   .digest("hex");
 
   const hashedToken = req.params.token;
-  console.log(hashedToken);
   const user = await User.findOne({
     passwordActivateToken: hashedToken,
   }).select("+active");
