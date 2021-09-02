@@ -30,8 +30,9 @@ exports.getDataFromLogs = async (checkId, reportLastDate) => {
     }, {})
   );
 
-  let up = stats.up;
-  let down = stats.down;
+  let up = stats.UP;
+  let down = stats.DOWN;
+
   let availability = 0,
     outages = 0,
     downtime = 0,
@@ -77,6 +78,7 @@ exports.mergeReportWithDiff = (report, reportDiff, newStatus) => {
   report.status = newStatus;
   report.outages += reportDiff.outages;
   report.upNumber += reportDiff.upNumber;
+
   report.responseTime = Math.round(
     totalResponse / (report.outages + report.upNumber)
   );

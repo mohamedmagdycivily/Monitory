@@ -98,6 +98,9 @@ exports.deleteCheck = catchAsync(async (req, res, next) => {
     deleteJob(doc);
     //delete logs associated with that check
     await Logs.deleteMany({ check: doc });
+    //delete the check report
+    await Logs.deleteOne({ check: doc });
+
     res.status(200).json({
       status: "success",
       data: null,
